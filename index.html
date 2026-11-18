@@ -34,7 +34,7 @@
   .vignette { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
     background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%); }
   .shade { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
-    background: linear-gradient(to top, rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 40%),
+    background: linear-gradient(to top, rgba(0,0,0,.62) 0%, rgba(0,0,0,.25) 28%, rgba(0,0,0,0) 48%),
                 linear-gradient(to bottom, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 16%); }
   .grain { position:absolute; top:-50%; left:-50%; width:200%; height:200%; pointer-events:none; opacity:.22;
     background:url(img/grain.png); -webkit-animation:grain 1s steps(6) infinite; animation:grain 1s steps(6) infinite; }
@@ -49,11 +49,13 @@
   .chapter h1 { font-size:clamp(46px,7.4vw,108px); }
   .chapter h2 { font-size:clamp(40px,5.6vw,84px); }
   .chapter p { margin-top:20px; font-size:clamp(18px,1.5vw,22px); line-height:1.55; color:#fff; max-width:520px; text-shadow:0 1px 18px rgba(0,0,0,.8); }
+  .chapter.top { bottom:auto; top:15vh; }
+  .kicker { text-shadow:0 1px 12px rgba(0,0,0,.85); }
   .chapter.center { left:0; right:0; margin:0 auto; text-align:center; bottom:auto; top:50%; max-width:900px; padding:0 6vw; }
   .chapter.center p { margin-left:auto; margin-right:auto; }
-  .ctas { margin-top:34px; display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
+  .ctas { margin-top:30px; display:flex; flex-wrap:wrap; gap:14px; }
   .ranges { margin-top:26px; font-size:15px; letter-spacing:.12em; text-transform:uppercase; color:#fff; }
-  .ranges span { color:var(--gold); padding:0 10px; }
+  .ranges span { color:var(--gold); padding:0 8px; }
   .cue { position:absolute; left:50%; bottom:28px; margin-left:-60px; width:120px; text-align:center; font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:#fff; }
   .cue i { display:block; width:1px; height:44px; margin:12px auto 0; background:linear-gradient(#fff,rgba(255,255,255,0)); -webkit-animation:cue 2s ease-in-out infinite; animation:cue 2s ease-in-out infinite; }
   @-webkit-keyframes cue { 0%,100%{opacity:.25} 50%{opacity:1} }
@@ -138,12 +140,12 @@
       <p>A centre stone, cut to be worn. A promise made in green.</p>
     </section>
 
-    <section class="chapter" data-at="moment">
+    <section class="chapter top" data-at="moment">
       <div class="kicker">The moment</div>
       <h2>From the dark of the mountain<br>to the light of the room.</h2>
     </section>
 
-    <section class="chapter center" data-at="enquire" id="enquire">
+    <section class="chapter" data-at="enquire" id="enquire">
       <div class="kicker">Private enquiries</div>
       <h2>Your stone<br>is waiting.</h2>
       <div class="ranges">Melee &amp; calibrated<span>·</span>Centre stones<span>·</span>Signature stones</div>
@@ -185,14 +187,14 @@
     { type:'dip',   a:2, b:4, dur:0.8 },
     { type:'still', src:S[3], dur:1.2, z0:1.03, z1:1.12, fx:.58, fy:.56, ch:'find', dk:1 },
     { type:'dip',   a:4, b:6, dur:0.8 },
-    { type:'still', src:S[4], dur:1.2, z0:1.03, z1:1.12, fx:.57, fy:.42, ch:'gem', dk:.55 },
+    { type:'still', src:S[4], dur:1.2, z0:1.03, z1:1.12, fx:.62, fy:.42, ch:'gem', dk:.45 },
     { type:'dip',   a:6, b:8, dur:0.8 },
-    { type:'still', src:S[5], dur:1.2, z0:1.03, z1:1.12, fx:.45, fy:.47, ch:'cut', dk:.4 },
+    { type:'still', src:S[5], dur:1.2, z0:1.03, z1:1.12, fx:.48, fy:.58, ch:'cut', dk:.3 },
     { type:'dip',   a:8, b:10, dur:0.8 },
-    { type:'still', src:S[6], dur:1.2, z0:1.03, z1:1.12, fx:.55, fy:.38, ch:'set', dk:.25 },
+    { type:'still', src:S[6], dur:1.2, z0:1.03, z1:1.12, fx:.5, fy:.34, ch:'set', dk:.15 },
     { type:'dip',   a:10, b:12, dur:0.8 },
-    { type:'still', src:S[7], dur:2.0, z0:1.7, z1:1.0, fx:.78, fy:.79, ch:'moment', ease:true, dk:0 },
-    { type:'still', src:S[7], dur:1.4, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'enquire', dark:.32, dk:0 }
+    { type:'still', src:S[7], dur:2.0, z0:1.7, z1:1.0, fx:.52, fy:.63, ch:'moment', ease:true, dk:0 },
+    { type:'still', src:S[7], dur:1.4, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'enquire', dark:.18, dk:0 }
   ];
 
   // Load everything, first scenes first
@@ -300,7 +302,7 @@
   function light(t) {
     var d = dkAt(t);
     vig.style.opacity = d.toFixed(3);
-    shade.style.opacity = (0.55 + 0.45 * d).toFixed(3);
+    shade.style.opacity = (0.85 + 0.15 * d).toFixed(3);
   }
 
   // Chapter text: fade and drift
