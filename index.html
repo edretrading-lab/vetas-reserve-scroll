@@ -32,10 +32,11 @@
   .stage { position:-webkit-sticky; position:sticky; top:0; height:100vh; width:100%; overflow:hidden; }
   canvas { position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
   .vignette { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
-    background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 45%, rgba(0,0,0,.55) 100%),
-                linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,0) 45%),
-                linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 18%); }
-  .grain { position:absolute; top:-50%; left:-50%; width:200%; height:200%; pointer-events:none; opacity:.35;
+    background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%); }
+  .shade { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
+    background: linear-gradient(to top, rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 40%),
+                linear-gradient(to bottom, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 16%); }
+  .grain { position:absolute; top:-50%; left:-50%; width:200%; height:200%; pointer-events:none; opacity:.22;
     background:url(img/grain.png); -webkit-animation:grain 1s steps(6) infinite; animation:grain 1s steps(6) infinite; }
   @-webkit-keyframes grain { 0%{-webkit-transform:translate(0,0)} 33%{-webkit-transform:translate(-4%,3%)} 66%{-webkit-transform:translate(3%,-5%)} 100%{-webkit-transform:translate(-2%,2%)} }
   @keyframes grain { 0%{transform:translate(0,0)} 33%{transform:translate(-4%,3%)} 66%{transform:translate(3%,-5%)} 100%{transform:translate(-2%,2%)} }
@@ -91,7 +92,8 @@
 <main class="film" id="film">
   <div class="stage" id="stage">
     <canvas id="c" aria-label="A Colombian emerald's journey from the mountain to the ring" role="img"></canvas>
-    <div class="vignette"></div>
+    <div class="vignette" id="vig"></div>
+    <div class="shade" id="shade"></div>
     <div class="grain"></div>
 
     <section class="chapter" data-at="hero">
@@ -177,20 +179,20 @@
   // Timeline. "seq" = real AI camera move. "dip" = temporary bridge until the next clip is made.
   // fx, fy = the point the camera drifts toward.
   var T = [
-    { type:'still', src:S[1], dur:1.1, z0:1.06, z1:1.0, fx:.5, fy:.45, ch:'hero' },
-    { type:'seq',   frames:t1, dur:2.6, ch:'valley' },
-    { type:'still', src:S[2], dur:0.9, z0:1.0, z1:1.1, fx:.5, fy:.45, ch:'tunnel' },
-    { type:'dip',   a:2, b:3, dur:0.8 },
-    { type:'still', src:S[3], dur:1.2, z0:1.03, z1:1.12, fx:.58, fy:.56, ch:'find' },
-    { type:'dip',   a:4, b:5, dur:0.8 },
-    { type:'still', src:S[4], dur:1.2, z0:1.03, z1:1.12, fx:.57, fy:.42, ch:'gem' },
-    { type:'dip',   a:6, b:7, dur:0.8 },
-    { type:'still', src:S[5], dur:1.2, z0:1.03, z1:1.12, fx:.45, fy:.47, ch:'cut' },
-    { type:'dip',   a:8, b:9, dur:0.8 },
-    { type:'still', src:S[6], dur:1.2, z0:1.03, z1:1.12, fx:.55, fy:.38, ch:'set' },
-    { type:'dip',   a:10, b:11, dur:0.8 },
-    { type:'still', src:S[7], dur:2.0, z0:1.7, z1:1.0, fx:.78, fy:.79, ch:'moment', ease:true },
-    { type:'still', src:S[7], dur:1.4, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'enquire', dark:.55 }
+    { type:'still', src:S[1], dur:1.1, z0:1.06, z1:1.0, fx:.5, fy:.45, ch:'hero', dk:.6 },
+    { type:'seq',   frames:t1, dur:2.6, ch:'valley', dk:.8 },
+    { type:'still', src:S[2], dur:0.9, z0:1.0, z1:1.1, fx:.5, fy:.45, ch:'tunnel', dk:1 },
+    { type:'dip',   a:2, b:4, dur:0.8 },
+    { type:'still', src:S[3], dur:1.2, z0:1.03, z1:1.12, fx:.58, fy:.56, ch:'find', dk:1 },
+    { type:'dip',   a:4, b:6, dur:0.8 },
+    { type:'still', src:S[4], dur:1.2, z0:1.03, z1:1.12, fx:.57, fy:.42, ch:'gem', dk:.55 },
+    { type:'dip',   a:6, b:8, dur:0.8 },
+    { type:'still', src:S[5], dur:1.2, z0:1.03, z1:1.12, fx:.45, fy:.47, ch:'cut', dk:.4 },
+    { type:'dip',   a:8, b:10, dur:0.8 },
+    { type:'still', src:S[6], dur:1.2, z0:1.03, z1:1.12, fx:.55, fy:.38, ch:'set', dk:.25 },
+    { type:'dip',   a:10, b:12, dur:0.8 },
+    { type:'still', src:S[7], dur:2.0, z0:1.7, z1:1.0, fx:.78, fy:.79, ch:'moment', ease:true, dk:0 },
+    { type:'still', src:S[7], dur:1.4, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'enquire', dark:.32, dk:0 }
   ];
 
   // Load everything, first scenes first
@@ -274,10 +276,31 @@
       if (m > 0.01 && ok(seg.ims[f1])) cover(seg.ims[f1], 1, .5, .5, m);
     } else if (seg.type === 'dip') {
       var A2 = T[seg.a], B2 = T[seg.b];
-      if (p < .5) { cover(A2.im, A2.z1 + .05 * p * 2, A2.fx, A2.fy, 1 - p * 2); }
-      else { cover(B2.im, 1 + (B2.z0 - 1) * (p - .5) * 2, B2.fx, B2.fy, (p - .5) * 2); }
+      if (!ok(B2.im)) { cover(A2.im, A2.z1, A2.fx, A2.fy, 1); chapters(t); light(t); return; }
+      var q2 = ease(p);
+      cover(A2.im, A2.z1 + .05 * p, A2.fx, A2.fy, 1);
+      cover(B2.im, B2.z0 - .03 * (1 - p), B2.fx, B2.fy, q2);
     }
     chapters(t);
+    light(t);
+  }
+
+  // Edges are darkest in the mine and open up as the story rises
+  var vig = document.getElementById('vig'), shade = document.getElementById('shade');
+  function dkAt(t) {
+    var pts = [];
+    for (var i = 0; i < T.length; i++) if (T[i].dk !== undefined) pts.push([T[i].start + T[i].dur / 2, T[i].dk]);
+    if (t <= pts[0][0]) return pts[0][1];
+    for (var j = 1; j < pts.length; j++) if (t <= pts[j][0]) {
+      var a = pts[j - 1], b = pts[j], u = (t - a[0]) / (b[0] - a[0]);
+      return a[1] + (b[1] - a[1]) * u;
+    }
+    return pts[pts.length - 1][1];
+  }
+  function light(t) {
+    var d = dkAt(t);
+    vig.style.opacity = d.toFixed(3);
+    shade.style.opacity = (0.55 + 0.45 * d).toFixed(3);
   }
 
   // Chapter text: fade and drift
