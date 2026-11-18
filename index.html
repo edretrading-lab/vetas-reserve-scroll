@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vetas Reserve | The finest Colombian emeralds</title>
+<meta name="description" content="Follow one Colombian emerald from the mountains of Boyacá to the moment it is worn. Vetas Reserve sources rough at the mines of Muzo, Chivor and Coscuez.">
+<meta property="og:title" content="Vetas Reserve | From the mountain to the moment">
+<meta property="og:description" content="Follow one Colombian emerald from the mine to the moment it is worn.">
+<meta property="og:image" content="img/s7m.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --gold:#c9a96e; --green:#2fbf8a; --ink:#050605; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { background:var(--ink); }
+  body { background:var(--ink); color:#fff; font-family:'Jost',Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; }
+
+  /* Top bar */
+  .bar { position:fixed; top:0; left:0; right:0; z-index:30; display:flex; justify-content:space-between; align-items:center; padding:22px 4vw; }
+  .logo { font-family:'Cormorant Garamond',Georgia,serif; font-weight:600; letter-spacing:.32em; font-size:18px; text-decoration:none; }
+  .btn { display:inline-block; text-decoration:none; font-size:14px; letter-spacing:.18em; text-transform:uppercase; padding:13px 24px; border:1px solid rgba(255,255,255,.75); border-radius:2px; transition:background .3s,color .3s; }
+  .btn:hover, .btn:focus { background:#fff; color:#000; }
+  .btn.gold { border-color:var(--gold); background:var(--gold); color:#0a0a0a; }
+  .btn.gold:hover, .btn.gold:focus { background:#e2c48a; }
+  .progress { position:fixed; top:0; left:0; height:2px; width:0; background:var(--gold); z-index:31; }
+
+  /* Stage */
+  .film { position:relative; }
+  .stage { position:-webkit-sticky; position:sticky; top:0; height:100vh; width:100%; overflow:hidden; }
+  canvas { position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
+  .vignette { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
+    background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 45%, rgba(0,0,0,.55) 100%),
+                linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,0) 45%),
+                linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 18%); }
+  .grain { position:absolute; top:-50%; left:-50%; width:200%; height:200%; pointer-events:none; opacity:.35;
+    background:url(img/grain.png); -webkit-animation:grain 1s steps(6) infinite; animation:grain 1s steps(6) infinite; }
+  @-webkit-keyframes grain { 0%{-webkit-transform:translate(0,0)} 33%{-webkit-transform:translate(-4%,3%)} 66%{-webkit-transform:translate(3%,-5%)} 100%{-webkit-transform:translate(-2%,2%)} }
+  @keyframes grain { 0%{transform:translate(0,0)} 33%{transform:translate(-4%,3%)} 66%{transform:translate(3%,-5%)} 100%{transform:translate(-2%,2%)} }
+
+  /* Chapters */
+  .chapter { position:absolute; left:6vw; bottom:12vh; max-width:640px; opacity:0; will-change:opacity,transform; pointer-events:none; }
+  .chapter.on { pointer-events:auto; }
+  .kicker { font-size:14px; letter-spacing:.32em; text-transform:uppercase; color:var(--gold); margin-bottom:18px; }
+  .chapter h1, .chapter h2 { font-family:'Cormorant Garamond',Georgia,serif; font-weight:500; line-height:1.02; letter-spacing:-.01em; text-shadow:0 2px 30px rgba(0,0,0,.6); }
+  .chapter h1 { font-size:clamp(46px,7.4vw,108px); }
+  .chapter h2 { font-size:clamp(40px,5.6vw,84px); }
+  .chapter p { margin-top:20px; font-size:clamp(18px,1.5vw,22px); line-height:1.55; color:#fff; max-width:520px; text-shadow:0 1px 18px rgba(0,0,0,.8); }
+  .chapter.center { left:0; right:0; margin:0 auto; text-align:center; bottom:auto; top:50%; max-width:900px; padding:0 6vw; }
+  .chapter.center p { margin-left:auto; margin-right:auto; }
+  .ctas { margin-top:34px; display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
+  .ranges { margin-top:26px; font-size:15px; letter-spacing:.12em; text-transform:uppercase; color:#fff; }
+  .ranges span { color:var(--gold); padding:0 10px; }
+  .cue { position:absolute; left:50%; bottom:28px; margin-left:-60px; width:120px; text-align:center; font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:#fff; }
+  .cue i { display:block; width:1px; height:44px; margin:12px auto 0; background:linear-gradient(#fff,rgba(255,255,255,0)); -webkit-animation:cue 2s ease-in-out infinite; animation:cue 2s ease-in-out infinite; }
+  @-webkit-keyframes cue { 0%,100%{opacity:.25} 50%{opacity:1} }
+  @keyframes cue { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+  /* Loader */
+  .loader { position:fixed; top:0; left:0; right:0; bottom:0; z-index:50; background:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity .9s; }
+  .loader .logo { font-size:22px; }
+  .loader .pct { margin-top:18px; font-size:13px; letter-spacing:.3em; color:var(--gold); }
+  .loader.done { opacity:0; pointer-events:none; }
+
+  footer { position:relative; z-index:2; background:var(--ink); padding:70px 6vw 60px; text-align:center; border-top:1px solid rgba(201,169,110,.25); }
+  footer .logo { font-size:20px; }
+  footer p { margin:18px auto 0; max-width:760px; font-size:14px; line-height:1.7; color:#d8d8d8; }
+  footer a { color:var(--gold); }
+
+  @media (max-width:640px) {
+    .bar { padding:16px 5vw; }
+    .logo { font-size:15px; letter-spacing:.26em; }
+    .bar .btn { padding:10px 14px; font-size:12px; }
+    .chapter { left:6vw; right:6vw; bottom:15vh; }
+    .cue { bottom:18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader"><div class="logo">VETAS RESERVE</div><div class="pct" id="pct">0%</div></div>
+<div class="progress" id="progress"></div>
+
+<header class="bar">
+  <a class="logo" href="https://vetasreserve.com">VETAS RESERVE</a>
+  <a class="btn" href="#enquire">Enquire</a>
+</header>
+
+<main class="film" id="film">
+  <div class="stage" id="stage">
+    <canvas id="c" aria-label="A Colombian emerald's journey from the mountain to the ring" role="img"></canvas>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+
+    <section class="chapter" data-at="hero">
+      <div class="kicker">Vetas Reserve</div>
+      <h1>The finest<br>Colombian emeralds.</h1>
+      <p>Follow one stone from the mountain to the moment it is worn.</p>
+    </section>
+
+    <section class="chapter" data-at="valley">
+      <div class="kicker">Boyacá, Colombia</div>
+      <h2>The mountains<br>keep a secret.</h2>
+      <p>Beneath Muzo, Chivor and Coscuez, green has been growing in the dark for millions of years.</p>
+    </section>
+
+    <section class="chapter" data-at="tunnel">
+      <div class="kicker">The search</div>
+      <h2>By lamplight.</h2>
+      <p>Miners follow the black shale and white calcite. Most days, the mountain gives nothing back.</p>
+    </section>
+
+    <section class="chapter" data-at="find">
+      <div class="kicker">The find</div>
+      <h2>Then, a flash<br>of green.</h2>
+      <p>Still locked in the rock. Still rough. Already rare.</p>
+    </section>
+
+    <section class="chapter" data-at="gem">
+      <div class="kicker">The gemmologist</div>
+      <h2>Nothing<br>is guessed.</h2>
+      <p>Every parcel is assessed by our own gemmologist before a single facet is cut.</p>
+    </section>
+
+    <section class="chapter" data-at="cut">
+      <div class="kicker">The lapidary</div>
+      <h2>Patience,<br>then light.</h2>
+      <p>Our lapidary decides what the stone will become. Much of the rough is ground away so the best of it can shine.</p>
+    </section>
+
+    <section class="chapter" data-at="set">
+      <div class="kicker">The setting</div>
+      <h2>Held in<br>platinum.</h2>
+      <p>A centre stone, cut to be worn. A promise made in green.</p>
+    </section>
+
+    <section class="chapter" data-at="moment">
+      <div class="kicker">The moment</div>
+      <h2>From the dark of the mountain<br>to the light of the room.</h2>
+    </section>
+
+    <section class="chapter center" data-at="enquire" id="enquire">
+      <div class="kicker">Private enquiries</div>
+      <h2>Your stone<br>is waiting.</h2>
+      <div class="ranges">Melee &amp; calibrated<span>·</span>Centre stones<span>·</span>Signature stones</div>
+      <div class="ctas">
+        <a class="btn gold" href="mailto:contact@vetasreserve.com?subject=Private%20enquiry">Enquire privately</a>
+        <a class="btn" href="https://wa.me/6281337931296" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </section>
+
+    <div class="cue" id="cue">Scroll<i></i></div>
+  </div>
+</main>
+
+<footer>
+  <div class="logo">VETAS RESERVE</div>
+  <p><a href="mailto:contact@vetasreserve.com">contact@vetasreserve.com</a> &nbsp;·&nbsp; +62 813 3793 1296</p>
+  <p>Aqueous International Ltd (Hong Kong) is an independent purveyor of Colombian emeralds and is not affiliated with, endorsed by, or a certifying body of any mine, certification body or industry body. Imagery is illustrative.</p>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var small = window.innerWidth < 800;
+
+  function img(src) { var i = new Image(); i.decoding = 'async'; i.src = src; return i; }
+  var S = {};
+  for (var n = 1; n <= 7; n++) S[n] = small ? 'img/s' + n + 'm.jpg' : 'img/s' + n + '.jpg';
+
+  // Frame sequence for the real transition (valley into the mine)
+  var t1 = [];
+  for (var k = 1; k <= 119; k += 2) t1.push('f/' + ('00' + k).slice(-3) + '.jpg');
+
+  // Timeline. "seq" = real AI camera move. "dip" = temporary bridge until the next clip is made.
+  // fx, fy = the point the camera drifts toward.
+  var T = [
+    { type:'still', src:S[1], dur:1.1, z0:1.06, z1:1.0, fx:.5, fy:.45, ch:'hero' },
+    { type:'seq',   frames:t1, dur:2.6, ch:'valley' },
+    { type:'still', src:S[2], dur:0.9, z0:1.0, z1:1.1, fx:.5, fy:.45, ch:'tunnel' },
+    { type:'dip',   a:2, b:3, dur:0.8 },
+    { type:'still', src:S[3], dur:1.2, z0:1.03, z1:1.12, fx:.58, fy:.56, ch:'find' },
+    { type:'dip',   a:4, b:5, dur:0.8 },
+    { type:'still', src:S[4], dur:1.2, z0:1.03, z1:1.12, fx:.57, fy:.42, ch:'gem' },
+    { type:'dip',   a:6, b:7, dur:0.8 },
+    { type:'still', src:S[5], dur:1.2, z0:1.03, z1:1.12, fx:.45, fy:.47, ch:'cut' },
+    { type:'dip',   a:8, b:9, dur:0.8 },
+    { type:'still', src:S[6], dur:1.2, z0:1.03, z1:1.12, fx:.55, fy:.38, ch:'set' },
+    { type:'dip',   a:10, b:11, dur:0.8 },
+    { type:'still', src:S[7], dur:2.0, z0:1.7, z1:1.0, fx:.78, fy:.79, ch:'moment', ease:true },
+    { type:'still', src:S[7], dur:1.4, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'enquire', dark:.55 }
+  ];
+
+  // Load everything, first scenes first
+  var pending = 0, loaded = 0, firstReady = false;
+  function track(i) {
+    pending++;
+    i.onload = i.onerror = function () { loaded++; update(); };
+    return i;
+  }
+  var loaderEl = document.getElementById('loader'), pctEl = document.getElementById('pct');
+  function update() {
+    var p = Math.round(loaded / pending * 100);
+    pctEl.textContent = p + '%';
+    if (!firstReady && T[0].im && T[0].im.complete && loaded >= Math.min(pending, 14)) {
+      firstReady = true; loaderEl.className = 'loader done';
+    }
+  }
+  for (var a = 0; a < T.length; a++) {
+    var s = T[a];
+    if (s.type === 'still') s.im = track(img(s.src));
+    if (s.type === 'seq') s.ims = s.frames.map(function (f) { return track(img(f)); });
+  }
+  setTimeout(function () { loaderEl.className = 'loader done'; firstReady = true; }, 9000);
+
+  // Timeline maths
+  var total = 0;
+  for (var b = 0; b < T.length; b++) { T[b].start = total; total += T[b].dur; }
+  var film = document.getElementById('film');
+  function sizeFilm() { film.style.height = (total * 90 + 100) + 'vh'; }
+  sizeFilm();
+
+  var c = document.getElementById('c'), ctx = c.getContext('2d');
+  var W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  function resize() {
+    W = c.clientWidth; H = c.clientHeight;
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', function () { resize(); draw(true); });
+
+  function ok(i) { return i && i.complete && i.naturalWidth > 0; }
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+  function ease(p) { return p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+
+  // Draw an image covering the screen, zoomed around a focus point
+  function cover(i, z, fx, fy, alpha) {
+    if (!ok(i)) return;
+    var iw = i.naturalWidth, ih = i.naturalHeight;
+    var s0 = Math.max(W / iw, H / ih), s = s0 * (reduce ? 1 : z);
+    var ox = clamp(W / 2 - fx * iw * s0, W - iw * s0, 0);
+    var oy = clamp(H / 2 - fy * ih * s0, H - ih * s0, 0);
+    var px = ox + fx * iw * s0, py = oy + fy * ih * s0;
+    var x = clamp(px - fx * iw * s, W - iw * s, 0);
+    var y = clamp(py - fy * ih * s, H - ih * s, 0);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(i, x, y, iw * s, ih * s);
+    ctx.globalAlpha = 1;
+  }
+  function still(seg, p, alpha) {
+    var q = seg.ease ? ease(p) : p;
+    cover(seg.im, seg.z0 + (seg.z1 - seg.z0) * q, seg.fx, seg.fy, alpha);
+    if (seg.dark) { ctx.fillStyle = 'rgba(0,0,0,' + (seg.dark * Math.min(1, p * 2)) + ')'; ctx.fillRect(0, 0, W, H); }
+  }
+
+  var cur = 0, target = 0, last = -1;
+  function draw(force) {
+    if (!force && Math.abs(cur - last) < 0.0005) return;
+    last = cur;
+    ctx.fillStyle = '#050605'; ctx.fillRect(0, 0, W, H);
+    var t = clamp(cur, 0, total - 0.0001), seg = T[0];
+    for (var i = 0; i < T.length; i++) if (t >= T[i].start) seg = T[i];
+    var p = (t - seg.start) / seg.dur;
+
+    if (seg.type === 'still') still(seg, p, 1);
+    else if (seg.type === 'seq') {
+      var f = p * (seg.ims.length - 1), f0 = Math.floor(f), f1 = Math.min(f0 + 1, seg.ims.length - 1), m = f - f0;
+      // fall back to nearest loaded frame
+      var A = seg.ims[f0]; while (!ok(A) && f0 > 0) A = seg.ims[--f0];
+      cover(A, 1, .5, .5, 1);
+      if (m > 0.01 && ok(seg.ims[f1])) cover(seg.ims[f1], 1, .5, .5, m);
+    } else if (seg.type === 'dip') {
+      var A2 = T[seg.a], B2 = T[seg.b];
+      if (p < .5) { cover(A2.im, A2.z1 + .05 * p * 2, A2.fx, A2.fy, 1 - p * 2); }
+      else { cover(B2.im, 1 + (B2.z0 - 1) * (p - .5) * 2, B2.fx, B2.fy, (p - .5) * 2); }
+    }
+    chapters(t);
+  }
+
+  // Chapter text: fade and drift
+  var chEls = {}, all = document.querySelectorAll('.chapter');
+  for (var e = 0; e < all.length; e++) chEls[all[e].getAttribute('data-at')] = all[e];
+  function chapters(t) {
+    for (var j = 0; j < T.length; j++) {
+      var sg = T[j]; if (!sg.ch) continue;
+      var el = chEls[sg.ch], lp = (t - sg.start) / sg.dur, o = 0;
+      var isLast = j === T.length - 1, isFirst = j === 0;
+      if (lp > -0.1 && lp < 1.1) {
+        var inn = isFirst ? 1 : clamp((lp - 0.12) / 0.2, 0, 1);
+        var out = isLast ? 1 : clamp((0.92 - lp) / 0.18, 0, 1);
+        o = Math.min(inn, out);
+      }
+      el.style.opacity = o.toFixed(3);
+      var dy = (1 - o) * 28;
+      el.style.webkitTransform = el.style.transform = (el.className.indexOf('center') > -1 ? 'translateY(-50%) ' : '') + 'translateY(' + dy.toFixed(1) + 'px)';
+      el.className = el.className.replace(' on', '') + (o > .5 ? ' on' : '');
+    }
+  }
+
+  var prog = document.getElementById('progress'), cue = document.getElementById('cue');
+  function readScroll() {
+    var r = film.getBoundingClientRect(), span = film.offsetHeight - window.innerHeight;
+    var p = clamp(-r.top / span, 0, 1);
+    target = p * total;
+    prog.style.width = (p * 100).toFixed(2) + '%';
+    cue.style.opacity = p > 0.02 ? 0 : 1;
+  }
+  window.addEventListener('scroll', readScroll, { passive: true });
+  readScroll(); cur = target;
+
+  function loop() {
+    var k = reduce ? 1 : 0.11;
+    cur += (target - cur) * k;
+    if (Math.abs(target - cur) < 0.0004) cur = target;
+    draw(false);
+    window.requestAnimationFrame(loop);
+  }
+  draw(true);
+  loop();
+
+  // Top "Enquire" button jumps to the final scene
+  document.querySelector('.bar .btn').addEventListener('click', function (ev) {
+    ev.preventDefault();
+    window.scrollTo(0, film.offsetTop + film.offsetHeight - window.innerHeight - 2);
+  });
+
+  // Expose for the preview recorder
+  window.__vetas = { total: total, film: film, setNow: function (v) { cur = target = v; draw(true); } };
+})();
+</script>
+</body>
+</html>
