@@ -140,7 +140,7 @@
       <p>A centre stone, cut to be worn. A promise made in green.</p>
     </section>
 
-    <section class="chapter top" data-at="moment">
+    <section class="chapter" data-at="moment">
       <div class="kicker">The moment</div>
       <h2>From the dark of the mountain<br>to the light of the room.</h2>
     </section>
@@ -174,50 +174,55 @@
   var S = {};
   for (var n = 1; n <= 7; n++) S[n] = small ? 'img/s' + n + 'm.jpg' : 'img/s' + n + '.jpg';
 
-  // Frame sequence for the real transition (valley into the mine)
-  var t1 = [];
-  for (var k = 1; k <= 119; k += 2) t1.push('f/' + ('00' + k).slice(-3) + '.jpg');
+  // Real AI camera moves, played frame by frame as you scroll
+  function seq(dir, n, step, start) {
+    var out = [];
+    for (var k = start; k <= n; k += step) out.push(dir + '/' + ('00' + k).slice(-3) + '.jpg');
+    return out;
+  }
+  var t1 = seq('f', 119, 2, 1);
+  var t2 = seq('f2', 60, 1, 1), t3 = seq('f3', 60, 1, 1), t4 = seq('f4', 60, 1, 1), t5 = seq('f5', 60, 1, 1), t6 = seq('f6', 60, 1, 1);
 
-  // Timeline. "seq" = real AI camera move. "dip" = temporary bridge until the next clip is made.
-  // fx, fy = the point the camera drifts toward.
+  // Timeline: stills are pauses for the words, seqs are the journey between them.
+  // dk = how dark the edges are (1 in the mine, 0 at the party).
   var T = [
     { type:'still', src:S[1], dur:1.1, z0:1.06, z1:1.0, fx:.5, fy:.45, ch:'hero', dk:.6 },
-    { type:'seq',   frames:t1, dur:2.6, ch:'valley', dk:.8 },
-    { type:'still', src:S[2], dur:0.9, z0:1.0, z1:1.1, fx:.5, fy:.45, ch:'tunnel', dk:1 },
-    { type:'dip',   a:2, b:4, dur:0.8 },
-    { type:'still', src:S[3], dur:1.2, z0:1.03, z1:1.12, fx:.58, fy:.56, ch:'find', dk:1 },
-    { type:'dip',   a:4, b:6, dur:0.8 },
-    { type:'still', src:S[4], dur:1.2, z0:1.03, z1:1.12, fx:.62, fy:.42, ch:'gem', dk:.45 },
-    { type:'dip',   a:6, b:8, dur:0.8 },
-    { type:'still', src:S[5], dur:1.2, z0:1.03, z1:1.12, fx:.48, fy:.58, ch:'cut', dk:.3 },
-    { type:'dip',   a:8, b:10, dur:0.8 },
-    { type:'still', src:S[6], dur:1.2, z0:1.03, z1:1.12, fx:.5, fy:.34, ch:'set', dk:.15 },
-    { type:'dip',   a:10, b:12, dur:0.8 },
-    { type:'still', src:S[7], dur:2.0, z0:1.7, z1:1.0, fx:.52, fy:.63, ch:'moment', ease:true, dk:0 },
-    { type:'still', src:S[7], dur:1.4, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'enquire', dark:.18, dk:0 }
+    { type:'seq',   frames:t1, dur:2.4, ch:'valley', dk:.8 },
+    { type:'seq',   frames:t2, dur:2.4, ch:'tunnel', dk:1 },
+    { type:'still', src:S[3], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'find', dk:1 },
+    { type:'seq',   frames:t3, dur:2.4, dk:.7 },
+    { type:'still', src:S[4], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'gem', dk:.45 },
+    { type:'seq',   frames:t4, dur:2.2, dk:.35 },
+    { type:'still', src:S[5], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'cut', dk:.28 },
+    { type:'seq',   frames:t5, dur:2.2, dk:.2 },
+    { type:'still', src:S[6], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'set', dk:.12 },
+    { type:'seq',   frames:t6, dur:2.6, dk:.05 },
+    { type:'still', src:S[7], dur:1.3, z0:1.0, z1:1.03, fx:.52, fy:.5, ch:'moment', dk:0 },
+    { type:'still', src:S[7], dur:1.4, z0:1.03, z1:1.06, fx:.52, fy:.5, ch:'enquire', dark:.18, dk:0 }
   ];
 
-  // Load everything, first scenes first
-  var pending = 0, loaded = 0, firstReady = false;
-  function track(i) {
-    pending++;
-    i.onload = i.onerror = function () { loaded++; update(); };
-    return i;
-  }
+  // Load in story order, a few at a time, so the opening is ready first
+  var queue = [], loaded = 0, total_n = 0, firstReady = false, active = 0;
   var loaderEl = document.getElementById('loader'), pctEl = document.getElementById('pct');
-  function update() {
-    var p = Math.round(loaded / pending * 100);
-    pctEl.textContent = p + '%';
-    if (!firstReady && T[0].im && T[0].im.complete && loaded >= Math.min(pending, 14)) {
-      firstReady = true; loaderEl.className = 'loader done';
-    }
-  }
+  function want(src) { var i = new Image(); i.decoding = 'async'; i._src = src; queue.push(i); total_n++; return i; }
   for (var a = 0; a < T.length; a++) {
     var s = T[a];
-    if (s.type === 'still') s.im = track(img(s.src));
-    if (s.type === 'seq') s.ims = s.frames.map(function (f) { return track(img(f)); });
+    if (s.type === 'still') s.im = want(s.src);
+    if (s.type === 'seq') s.ims = s.frames.map(want);
   }
-  setTimeout(function () { loaderEl.className = 'loader done'; firstReady = true; }, 9000);
+  function pump() {
+    while (active < 8 && queue.length) {
+      var i = queue.shift(); active++;
+      i.onload = i.onerror = function () { active--; loaded++; update(); pump(); };
+      i.src = i._src;
+    }
+  }
+  function update() {
+    pctEl.textContent = Math.round(loaded / Math.min(total_n, 70) * 100 > 100 ? 100 : loaded / Math.min(total_n, 70) * 100) + '%';
+    if (!firstReady && loaded >= Math.min(total_n, 70)) { firstReady = true; loaderEl.className = 'loader done'; }
+  }
+  pump();
+  setTimeout(function () { loaderEl.className = 'loader done'; firstReady = true; }, 8000);
 
   // Timeline maths
   var total = 0;
