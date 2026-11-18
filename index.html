@@ -128,21 +128,39 @@
       <p>Every parcel is assessed by our own gemmologist before a single facet is cut.</p>
     </section>
 
+    <section class="chapter" data-at="plan">
+      <div class="kicker">The plan</div>
+      <h2>Study first.<br>Cut once.</h2>
+      <p>Before a single facet, our lapidary reads the rough under the loupe and marks the line by hand.</p>
+    </section>
+
     <section class="chapter" data-at="cut">
       <div class="kicker">The lapidary</div>
       <h2>Patience,<br>then light.</h2>
-      <p>Our lapidary decides what the stone will become. Much of the rough is ground away so the best of it can shine.</p>
+      <p>Each facet is set to a precise angle and cut one at a time. Much of the rough is ground away so the best of it can shine.</p>
+    </section>
+
+    <section class="chapter" data-at="measure">
+      <div class="kicker">The measure</div>
+      <h2>Precision<br>you can wear.</h2>
+      <p>Every finished stone is weighed, measured and checked again before it leaves the bench.</p>
     </section>
 
     <section class="chapter" data-at="set">
       <div class="kicker">The setting</div>
-      <h2>Held in<br>platinum.</h2>
-      <p>A centre stone, cut to be worn. A promise made in green.</p>
+      <h2>Set<br>by hand.</h2>
+      <p>A master setter works under the microscope, bringing each claw over the stone.</p>
+    </section>
+
+    <section class="chapter" data-at="ring">
+      <div class="kicker">The ring</div>
+      <h2>Made to<br>be worn.</h2>
+      <p>A centre stone of deep Colombian green, ready for its moment.</p>
     </section>
 
     <section class="chapter" data-at="moment">
       <div class="kicker">The moment</div>
-      <h2>From the dark of the mountain<br>to the light of the room.</h2>
+      <h2>Some things are<br>worth the entrance.</h2>
     </section>
 
     <section class="chapter" data-at="enquire" id="enquire">
@@ -172,7 +190,7 @@
 
   function img(src) { var i = new Image(); i.decoding = 'async'; i.src = src; return i; }
   var S = {};
-  for (var n = 1; n <= 7; n++) S[n] = small ? 'img/s' + n + 'm.jpg' : 'img/s' + n + '.jpg';
+  for (var n = 1; n <= 11; n++) S[n] = small ? 'img/n' + n + 'm.jpg' : 'img/n' + n + '.jpg';
 
   // Real AI camera moves, played frame by frame as you scroll
   function seq(dir, n, step, start) {
@@ -180,26 +198,37 @@
     for (var k = start; k <= n; k += step) out.push(dir + '/' + ('00' + k).slice(-3) + '.jpg');
     return out;
   }
-  var t1 = seq('f', 119, 2, 1);
-  var t2 = seq('f2', 60, 1, 1), t3 = seq('f3', 60, 1, 1), t4 = seq('f4', 60, 1, 1), t5 = seq('f5', 60, 1, 1), t6 = seq('f6', 60, 1, 1);
+  var v1 = seq('v1', 49, 1, 1);   // valley into the mine (Kling 4.0)
+  var v2 = seq('v2', 61, 1, 1);   // the emerald, pulling back to her at the door (Kling 4.0)
 
   // Timeline: stills are pauses for the words, seqs are the journey between them.
   // dk = how dark the edges are (1 in the mine, 0 at the party).
   var T = [
-    { type:'still', src:S[1], dur:1.1, z0:1.06, z1:1.0, fx:.5, fy:.45, ch:'hero', dk:.6 },
-    { type:'seq',   frames:t1, dur:2.4, ch:'valley', dk:.8 },
-    { type:'seq',   frames:t2, dur:2.4, ch:'tunnel', dk:1 },
-    { type:'still', src:S[3], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'find', dk:1 },
-    { type:'seq',   frames:t3, dur:2.4, dk:.7 },
-    { type:'still', src:S[4], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'gem', dk:.45 },
-    { type:'seq',   frames:t4, dur:2.2, dk:.35 },
-    { type:'still', src:S[5], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'cut', dk:.28 },
-    { type:'seq',   frames:t5, dur:2.2, dk:.2 },
-    { type:'still', src:S[6], dur:1.0, z0:1.0, z1:1.0, fx:.5, fy:.5, ch:'set', dk:.12 },
-    { type:'seq',   frames:t6, dur:2.6, dk:.05 },
-    { type:'still', src:S[7], dur:1.3, z0:1.0, z1:1.03, fx:.52, fy:.5, ch:'moment', dk:0 },
-    { type:'still', src:S[7], dur:1.4, z0:1.03, z1:1.06, fx:.52, fy:.5, ch:'enquire', dark:.18, dk:0 }
+    { type:'still', src:S[1],  dur:1.1, z0:1.06, z1:1.0,  fx:.5,  fy:.45, ch:'hero', dk:.5 },
+    { type:'seq',   frames:v1, dur:2.4, ch:'valley', dk:.75 },
+    { type:'still', src:S[2],  dur:1.2, z0:1.0,  z1:1.1,  fx:.66, fy:.42, ch:'tunnel', dk:1 },
+    { type:'dip',   dur:0.8 },
+    { type:'still', src:S[3],  dur:1.2, z0:1.02, z1:1.09, fx:.6,  fy:.62, ch:'find', dk:.95 },
+    { type:'dip',   dur:0.8 },
+    { type:'still', src:S[4],  dur:1.2, z0:1.02, z1:1.08, fx:.57, fy:.62, ch:'gem', dk:.45 },
+    { type:'dip',   dur:0.8 },
+    { type:'still', src:S[5],  dur:1.2, z0:1.02, z1:1.08, fx:.33, fy:.4,  ch:'plan', dk:.4 },
+    { type:'dip',   dur:0.8 },
+    { type:'still', src:S[6],  dur:1.2, z0:1.02, z1:1.09, fx:.24, fy:.6,  ch:'cut', dk:.35 },
+    { type:'dip',   dur:0.8 },
+    { type:'still', src:S[7],  dur:1.2, z0:1.02, z1:1.1,  fx:.37, fy:.45, ch:'measure', dk:.3 },
+    { type:'dip',   dur:0.8 },
+    { type:'still', src:S[8],  dur:1.2, z0:1.02, z1:1.08, fx:.75, fy:.65, ch:'set', dk:.3 },
+    { type:'dip',   dur:0.8 },
+    { type:'still', src:S[9],  dur:1.2, z0:1.02, z1:1.1,  fx:.37, fy:.62, ch:'ring', dk:.3 },
+    { type:'dip',   dur:0.9 },
+    { type:'still', src:S[10], dur:0.6, z0:1.0,  z1:1.0,  fx:.5,  fy:.5, dk:.6 },
+    { type:'seq',   frames:v2, dur:2.6, ch:'moment', dk:.55 },
+    { type:'still', src:S[11], dur:1.6, z0:1.0,  z1:1.03, fx:.6,  fy:.5, ch:'enquire', dark:.15, dk:.5 }
   ];
+  // Each soft blend joins the still before it to the still after it
+  for (var di = 0; di < T.length; di++) if (T[di].type === 'dip') { T[di].a = di - 1; T[di].b = di + 1; }
+
 
   // Load in story order, a few at a time, so the opening is ready first
   var queue = [], loaded = 0, total_n = 0, firstReady = false, active = 0;
