@@ -30,7 +30,7 @@
 
   /* Stage */
   .film { position:relative; }
-  .stage { position:-webkit-sticky; position:sticky; top:0; height:100vh; width:100%; overflow:hidden; }
+  .stage { position:-webkit-sticky; position:sticky; top:0; height:100vh; height:100svh; width:100%; overflow:hidden; }
   canvas { position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
   .vignette { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
     background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%); }
@@ -74,8 +74,14 @@
     .logo { font-size:15px; letter-spacing:.26em; }
     .bar .btn { padding:10px 14px; font-size:12px; }
     .links a:not(.btn) { display:none; }
-    .chapter { left:6vw; right:6vw; bottom:15vh; }
-    .cue { bottom:18px; }
+    .chapter { left:6vw; right:6vw; bottom:5vh; }
+    .chapter h1 { font-size:40px; }
+    .chapter h2 { font-size:34px; }
+    .chapter p { font-size:16px; margin-top:12px; }
+    .kicker { margin-bottom:10px; }
+    .cue { display:none; }
+    .ranges { display:none; }
+    .ctas { margin-top:18px; }
   }
 </style>
 <style>/* Original Vetas Reserve homepage styles, scoped */
@@ -570,10 +576,17 @@
 
   var c = document.getElementById('c'), ctx = c.getContext('2d');
   var W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  var BX = 0, BY = 0, BW = 0, BH = 0, tall = false;
   function resize() {
     W = c.clientWidth; H = c.clientHeight;
     c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    tall = W / H < 0.9;
+    if (tall) {
+      // phone held upright: show the whole shot as a widescreen band, words underneath
+      BW = W; BH = Math.min(Math.round(W * 9 / 16 * 1.75), Math.round(H * 0.6));
+      BX = 0; BY = Math.round(H * 0.105);
+    } else { BX = 0; BY = 0; BW = W; BH = H; }
   }
   resize();
   window.addEventListener('resize', function () { resize(); draw(true); });
@@ -586,15 +599,18 @@
   function cover(i, z, fx, fy, alpha) {
     if (!ok(i)) return;
     var iw = i.naturalWidth, ih = i.naturalHeight;
-    var s0 = Math.max(W / iw, H / ih), s = s0 * (reduce ? 1 : z);
-    var ox = clamp(W / 2 - fx * iw * s0, W - iw * s0, 0);
-    var oy = clamp(H / 2 - fy * ih * s0, H - ih * s0, 0);
+    var s0 = Math.max(BW / iw, BH / ih), s = s0 * (reduce ? 1 : z);
+    var ox = clamp(BW / 2 - fx * iw * s0, BW - iw * s0, 0);
+    var oy = clamp(BH / 2 - fy * ih * s0, BH - ih * s0, 0);
     var px = ox + fx * iw * s0, py = oy + fy * ih * s0;
-    var x = clamp(px - fx * iw * s, W - iw * s, 0);
-    var y = clamp(py - fy * ih * s, H - ih * s, 0);
+    var x = clamp(px - fx * iw * s, BW - iw * s, 0);
+    var y = clamp(py - fy * ih * s, BH - ih * s, 0);
+    ctx.save();
+    if (tall) { ctx.beginPath(); ctx.rect(BX, BY, BW, BH); ctx.clip(); }
     ctx.globalAlpha = alpha;
-    ctx.drawImage(i, x, y, iw * s, ih * s);
+    ctx.drawImage(i, BX + x, BY + y, iw * s, ih * s);
     ctx.globalAlpha = 1;
+    ctx.restore();
   }
   function still(seg, p, alpha) {
     var q = seg.ease ? ease(p) : p;
@@ -624,6 +640,14 @@
       var q2 = ease(p);
       cover(A2.im, A2.z1 + .05 * p, A2.fx, A2.fy, 1);
       cover(B2.im, B2.z0 - .03 * (1 - p), B2.fx, B2.fy, q2);
+    }
+    if (tall) {
+      var g1 = ctx.createLinearGradient(0, BY, 0, BY + 36);
+      g1.addColorStop(0, 'rgba(5,6,5,1)'); g1.addColorStop(1, 'rgba(5,6,5,0)');
+      ctx.fillStyle = g1; ctx.fillRect(0, BY, W, 36);
+      var g2 = ctx.createLinearGradient(0, BY + BH - 60, 0, BY + BH);
+      g2.addColorStop(0, 'rgba(5,6,5,0)'); g2.addColorStop(1, 'rgba(5,6,5,1)');
+      ctx.fillStyle = g2; ctx.fillRect(0, BY + BH - 60, W, 60);
     }
     chapters(t);
     light(t);
