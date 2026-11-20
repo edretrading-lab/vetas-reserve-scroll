@@ -621,7 +621,7 @@
   for (var b = 0; b < T.length; b++) { T[b].start = total; total += T[b].dur; }
   var film = document.getElementById('film');
   var touch = ('ontouchstart' in window) || window.innerWidth < 800;
-  function sizeFilm() { film.style.height = (total * (touch ? 115 : 95) + 100) + 'vh'; }
+  function sizeFilm() { film.style.height = (total * (touch ? 125 : 95) + 100) + 'vh'; }
   sizeFilm();
 
   var c = document.getElementById('c'), ctx = c.getContext('2d');
@@ -780,11 +780,13 @@
     var dt = lastT ? Math.min((now - lastT) / 1000, 0.05) : 0.016; lastT = now;
     if (reduce) cur = target;
     else {
-      // glide toward the scroll position, but never faster than about one scene a second
-      var step = (target - cur) * (1 - Math.pow(1 - 0.085, dt * 60)), vmax = 1.15 * dt;
-      cur += clamp(step, -vmax, vmax);
-      if (Math.abs(target - cur) < 0.0004) cur = target;
-      drift = 1.012 + 0.012 * Math.sin(now / 3200);
+      // the film moves only while you scroll: on phones it follows your finger exactly,
+      // with a mouse wheel it only smooths out the wheel's small steps
+      if (touch) cur = target;
+      else {
+        cur += (target - cur) * (1 - Math.pow(1 - 0.3, dt * 60));
+        if (Math.abs(target - cur) < 0.002) cur = target;
+      }
     }
     var onScreen = film.getBoundingClientRect().bottom > 0;
     if (onScreen) { draw(true); updHint(); }
