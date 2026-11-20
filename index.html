@@ -62,6 +62,35 @@
   @-webkit-keyframes cue { 0%,100%{opacity:.25} 50%{opacity:1} }
   @keyframes cue { 0%,100%{opacity:.25} 50%{opacity:1} }
 
+  /* Scroll prompt: big at the start, back again whenever the viewer stops */
+  .hint { position:absolute; left:0; right:0; top:50%; z-index:6; text-align:center; pointer-events:none; opacity:0;
+    -webkit-transform:translateY(-50%); transform:translateY(-50%); -webkit-transition:opacity .7s; transition:opacity .7s; }
+  .hint.show { opacity:1; }
+  .hint .pill { display:inline-block; background:rgba(5,6,5,.66); border:1px solid rgba(201,169,110,.8); border-radius:44px;
+    padding:18px 34px 16px; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+  .hint b { display:block; font-weight:500; font-size:22px; letter-spacing:.22em; text-transform:uppercase; color:#fff; }
+  .hint span { display:block; margin-top:8px; font-size:16px; letter-spacing:.04em; color:#fff; }
+  .hint .arrow { display:block; width:18px; height:18px; margin:12px auto 0; border-right:2px solid var(--gold); border-bottom:2px solid var(--gold);
+    -webkit-transform:rotate(45deg); transform:rotate(45deg); -webkit-animation:nudge 1.6s ease-in-out infinite; animation:nudge 1.6s ease-in-out infinite; }
+  @-webkit-keyframes nudge { 0%,100%{-webkit-transform:translateY(-4px) rotate(45deg);opacity:.5} 50%{-webkit-transform:translateY(6px) rotate(45deg);opacity:1} }
+  @keyframes nudge { 0%,100%{transform:translateY(-4px) rotate(45deg);opacity:.5} 50%{transform:translateY(6px) rotate(45deg);opacity:1} }
+  .hint .skip { display:none; margin-top:16px; font-size:13px; letter-spacing:.18em; text-transform:uppercase; color:#fff; pointer-events:auto; text-decoration:underline; text-underline-offset:4px; }
+  .hint.big .skip { display:table; margin:16px auto 0; }
+  .hint.side { left:auto; right:6vw; }
+  .hint.big .pill { padding:24px 38px 20px; }
+  .hint.big b { font-size:26px; }
+  .loader .say { margin-top:26px; font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:#fff; }
+
+  /* Phone menu */
+  .menu-btn { display:none; background:none; color:#fff; font:inherit; font-size:12px; letter-spacing:.18em; text-transform:uppercase;
+    border:1px solid rgba(255,255,255,.75); border-radius:2px; padding:10px 14px; cursor:pointer; }
+  .menu { position:fixed; top:0; left:0; right:0; bottom:0; z-index:40; background:rgba(5,6,5,.97); display:none;
+    flex-direction:column; align-items:center; justify-content:center; }
+  .menu.open { display:flex; }
+  .menu a { display:block; padding:16px 0; font-family:'Cormorant Garamond',Georgia,serif; font-size:32px; color:#fff; text-decoration:none; }
+  .menu a.gold { color:var(--gold); }
+  .menu .close { position:absolute; top:18px; right:5vw; }
+
   /* Loader */
   .loader { position:fixed; top:0; left:0; right:0; bottom:0; z-index:50; background:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity .9s; }
   .loader .logo { font-size:22px; }
@@ -73,7 +102,13 @@
     .bar { padding:16px 5vw; }
     .logo { font-size:15px; letter-spacing:.26em; }
     .bar .btn { padding:10px 14px; font-size:12px; }
-    .links a:not(.btn) { display:none; }
+    .links a { display:none; }
+    .menu-btn { display:inline-block; }
+    .hint b { font-size:18px; letter-spacing:.18em; }
+    .hint.big b { font-size:21px; }
+    .hint span { font-size:15px; }
+    .hint .pill { padding:14px 22px 12px; }
+    .hint.big .pill { padding:18px 26px 16px; }
     .chapter { left:6vw; right:6vw; bottom:5vh; }
     .chapter h1 { font-size:40px; }
     .chapter h2 { font-size:34px; }
@@ -210,7 +245,7 @@
 </head>
 <body>
 
-<div class="loader" id="loader"><div class="logo">VETAS RESERVE</div><div class="pct" id="pct">0%</div></div>
+<div class="loader" id="loader"><div class="logo">VETAS RESERVE</div><div class="pct" id="pct">0%</div><div class="say">Scroll down steadily to watch the story</div></div>
 <div class="progress" id="progress"></div>
 
 <header class="bar">
@@ -220,8 +255,18 @@
     <a href="/education/">Education</a>
     <a href="#available">Our Emeralds</a>
     <a class="btn" href="#enquire">Enquire</a>
+    <button class="menu-btn" id="menuBtn" type="button">Menu</button>
   </nav>
 </header>
+
+<div class="menu" id="menu">
+  <button class="menu-btn close" id="menuClose" type="button">Close</button>
+  <a href="#top">Skip the film</a>
+  <a href="/about">About</a>
+  <a href="/education/">Education</a>
+  <a href="#available">Our Emeralds</a>
+  <a class="gold" href="#enquire">Enquire</a>
+</div>
 
 <main class="film" id="film">
   <div class="stage" id="stage">
@@ -305,7 +350,11 @@
       </div>
     </section>
 
-    <div class="cue" id="cue">Scroll<i></i></div>
+    <div class="cue" id="cue" style="display:none"></div>
+    <div class="hint big" id="hint">
+      <div class="pill"><b>Scroll down steadily</b><span>The story plays as you scroll</span><i class="arrow"></i></div>
+      <a class="skip" href="#top">Skip the film</a>
+    </div>
   </div>
 </main>
 
@@ -521,21 +570,21 @@
     { type:'still', src:S[1],  dur:1.1, z0:1.06, z1:1.0,  fx:.5,  fy:.45, ch:'hero', dk:.5 },
     { type:'seq',   frames:v1, dur:2.4, ch:'valley', dk:.75 },
     { type:'still', src:S[2],  dur:1.2, z0:1.0,  z1:1.1,  fx:.66, fy:.42, ch:'tunnel', dk:1 },
-    { type:'dip',   dur:0.8 },
+    { type:'dip',   dur:1.25 },
     { type:'still', src:S[3],  dur:1.2, z0:1.02, z1:1.09, fx:.6,  fy:.62, ch:'find', dk:.95 },
-    { type:'dip',   dur:0.8 },
+    { type:'dip',   dur:1.25 },
     { type:'still', src:S[4],  dur:1.2, z0:1.02, z1:1.08, fx:.57, fy:.62, ch:'gem', dk:.45 },
-    { type:'dip',   dur:0.8 },
+    { type:'dip',   dur:1.25 },
     { type:'still', src:S[5],  dur:1.2, z0:1.02, z1:1.08, fx:.33, fy:.4,  ch:'plan', dk:.4 },
-    { type:'dip',   dur:0.8 },
+    { type:'dip',   dur:1.25 },
     { type:'still', src:S[6],  dur:1.2, z0:1.02, z1:1.09, fx:.24, fy:.6,  ch:'cut', dk:.35 },
-    { type:'dip',   dur:0.8 },
+    { type:'dip',   dur:1.25 },
     { type:'still', src:S[7],  dur:1.2, z0:1.02, z1:1.1,  fx:.37, fy:.45, ch:'measure', dk:.3 },
-    { type:'dip',   dur:0.8 },
+    { type:'dip',   dur:1.25 },
     { type:'still', src:S[8],  dur:1.2, z0:1.02, z1:1.08, fx:.75, fy:.65, ch:'set', dk:.3 },
-    { type:'dip',   dur:0.8 },
+    { type:'dip',   dur:1.25 },
     { type:'still', src:S[9],  dur:1.2, z0:1.02, z1:1.12, fx:.5,  fy:.52, ch:'ring', dk:.3 },
-    { type:'dip',   dur:0.9 },
+    { type:'dip',   dur:1.35 },
     { type:'still', src:S[10], dur:0.6, z0:1.0,  z1:1.0,  fx:.5,  fy:.5, dk:.6 },
     { type:'seq',   frames:v2, dur:2.6, ch:'moment', dk:.55 },
     { type:'still', src:S[11], dur:1.6, z0:1.0,  z1:1.03, fx:.6,  fy:.5, ch:'enquire', dark:.15, dk:.5 }
@@ -545,7 +594,7 @@
 
 
   // Load in story order, a few at a time, so the opening is ready first
-  var queue = [], loaded = 0, total_n = 0, firstReady = false, active = 0;
+  var dirty = true, queue = [], loaded = 0, total_n = 0, firstReady = false, active = 0;
   var loaderEl = document.getElementById('loader'), pctEl = document.getElementById('pct');
   function want(src) { var i = new Image(); i.decoding = 'async'; i._src = src; queue.push(i); total_n++; return i; }
   for (var a = 0; a < T.length; a++) {
@@ -556,7 +605,7 @@
   function pump() {
     while (active < 8 && queue.length) {
       var i = queue.shift(); active++;
-      i.onload = i.onerror = function () { active--; loaded++; update(); pump(); };
+      i.onload = i.onerror = function () { active--; loaded++; dirty = true; update(); pump(); };
       i.src = i._src;
     }
   }
@@ -571,7 +620,8 @@
   var total = 0;
   for (var b = 0; b < T.length; b++) { T[b].start = total; total += T[b].dur; }
   var film = document.getElementById('film');
-  function sizeFilm() { film.style.height = (total * 90 + 100) + 'vh'; }
+  var touch = ('ontouchstart' in window) || window.innerWidth < 800;
+  function sizeFilm() { film.style.height = (total * (touch ? 115 : 95) + 100) + 'vh'; }
   sizeFilm();
 
   var c = document.getElementById('c'), ctx = c.getContext('2d');
@@ -594,12 +644,15 @@
   function ok(i) { return i && i.complete && i.naturalWidth > 0; }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function ease(p) { return p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+  function smooth(p) { return p * p * p * (p * (p * 6 - 15) + 10); }
+  // a slow breathing drift so the picture never freezes when the viewer stops
+  var drift = 1;
 
   // Draw an image covering the screen, zoomed around a focus point
   function cover(i, z, fx, fy, alpha) {
     if (!ok(i)) return;
     var iw = i.naturalWidth, ih = i.naturalHeight;
-    var s0 = Math.max(BW / iw, BH / ih), s = s0 * (reduce ? 1 : z);
+    var s0 = Math.max(BW / iw, BH / ih), s = s0 * (reduce ? 1 : z * drift);
     var ox = clamp(BW / 2 - fx * iw * s0, BW - iw * s0, 0);
     var oy = clamp(BH / 2 - fy * ih * s0, BH - ih * s0, 0);
     var px = ox + fx * iw * s0, py = oy + fy * ih * s0;
@@ -637,9 +690,10 @@
     } else if (seg.type === 'dip') {
       var A2 = T[seg.a], B2 = T[seg.b];
       if (!ok(B2.im)) { cover(A2.im, A2.z1, A2.fx, A2.fy, 1); chapters(t); light(t); return; }
-      var q2 = ease(p);
-      cover(A2.im, A2.z1 + .05 * p, A2.fx, A2.fy, 1);
-      cover(B2.im, B2.z0 - .03 * (1 - p), B2.fx, B2.fy, q2);
+      var q2 = smooth(p);
+      // the old shot keeps pushing in while the new one settles into place
+      cover(A2.im, A2.z1 + .09 * ease(p), A2.fx, A2.fy, 1);
+      cover(B2.im, B2.z0 + .07 * (1 - ease(p)), B2.fx, B2.fy, q2);
     }
     if (tall) {
       var g1 = ctx.createLinearGradient(0, BY, 0, BY + 36);
@@ -697,20 +751,56 @@
     var p = clamp(-r.top / span, 0, 1);
     target = p * total;
     prog.style.width = (p * 100).toFixed(2) + '%';
-    cue.style.opacity = p > 0.02 ? 0 : 1;
+    lastMove = Date.now();
+  }
+  var lastMove = 0, hint = document.getElementById('hint'), hintOn = '';
+  function placeHint(big) {
+    var y;
+    if (tall) y = big ? BY + BH * 0.5 : BY + BH - 58;
+    else y = big ? H * 0.5 : 118;
+    hint.style.top = Math.round(y) + 'px';
+    if (!tall && big) { hint.style.top = Math.round(H * 0.68) + 'px'; }
+  }
+  function updHint() {
+    var endAt = T[T.length - 1].start, still2 = Math.abs(target - cur) < 0.02, idle = Date.now() - lastMove > 1400;
+    var state = '';
+    if (cur < 0.12 && target < 0.12) state = 'big';
+    else if (cur < endAt - 0.3 && still2 && idle && film.getBoundingClientRect().bottom > H * 0.5) state = 'stop';
+    if (state === hintOn) return;
+    hintOn = state;
+    if (state) { placeHint(state === 'big'); hint.className = 'hint show' + (state === 'big' ? ' big' + (tall ? '' : ' side') : ''); }
+    else hint.className = 'hint' + (hint.className.indexOf('big') > -1 ? ' big' : '');
   }
   window.addEventListener('scroll', readScroll, { passive: true });
   readScroll(); cur = target;
 
-  function loop() {
-    var k = reduce ? 1 : 0.11;
-    cur += (target - cur) * k;
-    if (Math.abs(target - cur) < 0.0004) cur = target;
-    draw(false);
+  var lastT = 0;
+  function loop(now) {
+    now = now || 0;
+    var dt = lastT ? Math.min((now - lastT) / 1000, 0.05) : 0.016; lastT = now;
+    if (reduce) cur = target;
+    else {
+      // glide toward the scroll position, but never faster than about one scene a second
+      var step = (target - cur) * (1 - Math.pow(1 - 0.085, dt * 60)), vmax = 1.15 * dt;
+      cur += clamp(step, -vmax, vmax);
+      if (Math.abs(target - cur) < 0.0004) cur = target;
+      drift = 1.012 + 0.012 * Math.sin(now / 3200);
+    }
+    var onScreen = film.getBoundingClientRect().bottom > 0;
+    if (onScreen) { draw(true); updHint(); }
+    else if (dirty) draw(true);
+    dirty = false;
     window.requestAnimationFrame(loop);
   }
   draw(true);
-  loop();
+  window.requestAnimationFrame(loop);
+
+  // Phone menu
+  var menu = document.getElementById('menu');
+  document.getElementById('menuBtn').onclick = function () { menu.className = 'menu open'; };
+  document.getElementById('menuClose').onclick = function () { menu.className = 'menu'; };
+  var mlinks = menu.getElementsByTagName('a');
+  for (var ml = 0; ml < mlinks.length; ml++) mlinks[ml].onclick = function () { menu.className = 'menu'; };
 
   // Bar turns solid once the film is over, so the menu stays readable on light sections
   var bar = document.querySelector('.bar');
